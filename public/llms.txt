@@ -1,0 +1,57 @@
+# מתלבט בין Avivi Solutions לבין BoostAI — Generative Engine Optimization Map
+
+> A אוטומציה עסקית ו-AI business.
+
+---
+
+## Pages
+
+### דף הבית
+https://avivi-solutions-boostai-c5986b1e.zappy5.app
+גלה שירותי הטמעת כלי AI לעסקים מקצועיים המספקים תוצאות אמיתיות. צור קשר עוד היום לייעוץ חינם!
+
+### שירותים
+https://avivi-solutions-boostai-c5986b1e.zappy5.app/services
+חקור את מגוון השירותים שלנו בהטמעת כלי AI לעסקים, הדרכת צוותים ואוטומציה עסקית. פתרונות מותאמים אישית לכל ארגון.
+
+### אודות
+https://avivi-solutions-boostai-c5986b1e.zappy5.app/about
+למד על Avivi Solutions - הצוות המוביל בהטמעת כלי AI לעסקים ואוטומציות עסקיות מבוססות בינה מלאכותית בישראל.
+
+### צור קשר
+https://avivi-solutions-boostai-c5986b1e.zappy5.app/contact
+צור קשר עם Avivi Solutions עוד היום לייעוץ חינם בהטמעת כלי AI לעסקים ואוטומציות עסקיות מבוססות בינה מלאכותית.
+
+## Legal & Policy
+
+### Privacy Policy
+https://avivi-solutions-boostai-c5986b1e.zappy5.app/privacy
+Information about how user data is collected, stored, and protected.
+
+### Terms & Conditions
+https://avivi-solutions-boostai-c5986b1e.zappy5.app/terms
+Legal terms describing service usage, rights, and policies.
+
+### Accessibility Statement
+https://avivi-solutions-boostai-c5986b1e.zappy5.app/accessibility
+Information about WCAG compliance and accessibility features.
+
+---
+
+# Business Context (for LLM understanding)
+
+## About מתלבט בין Avivi Solutions לבין BoostAI
+מתלבט בין Avivi Solutions לבין BoostAI is a business in the אוטומציה עסקית ו-AI industry.
+
+## Target Audience
+מנהלים וצוותים של אנליסטים עסקיים, data analysts, מנהלי פרויקטים
+
+## Industry
+אוטומציה עסקית ו-AI
+
+---
+
+# Additional Resources
+
+- **Sitemap**: https://avivi-solutions-boostai-c5986b1e.zappy5.app/sitemap.xml
+- **Robots.txt**: https://avivi-solutions-boostai-c5986b1e.zappy5.app/robots.txt

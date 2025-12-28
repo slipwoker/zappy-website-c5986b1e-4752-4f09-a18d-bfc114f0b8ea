@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://avivi-solutions-boostai-c5986b1e.zappy5.app/sitemap.xml
