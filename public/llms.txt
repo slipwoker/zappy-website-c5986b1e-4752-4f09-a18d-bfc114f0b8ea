@@ -1,47 +1,57 @@
-# Business — Generative Engine Optimization Map
+# Boost-AI — Generative Engine Optimization Map
+
+> A אוטומציה עסקית ו-AI business.
 
 ---
 
 ## Pages
 
 ### דף הבית
-https://example.com
+https://boost-ai.zappy5.app
 גלה שירותי הטמעת כלי AI לעסקים מקצועיים המספקים תוצאות אמיתיות. צור קשר עוד היום לייעוץ חינם!
 
 ### שירותים
-https://example.com/services
+https://boost-ai.zappy5.app/services
 חקור את מגוון השירותים שלנו בהטמעת כלי AI לעסקים, הדרכת צוותים ואוטומציה עסקית. פתרונות מותאמים אישית לכל ארגון.
 
 ### אודות
-https://example.com/about
+https://boost-ai.zappy5.app/about
 למד על Avivi Solutions - הצוות המוביל בהטמעת כלי AI לעסקים ואוטומציות עסקיות מבוססות בינה מלאכותית בישראל.
 
 ### צור קשר
-https://example.com/contact
+https://boost-ai.zappy5.app/contact
 צור קשר עם Avivi Solutions עוד היום לייעוץ חינם בהטמעת כלי AI לעסקים ואוטומציות עסקיות מבוססות בינה מלאכותית.
 
 ## Legal & Policy
 
 ### Privacy Policy
-https://example.com/privacy
+https://boost-ai.zappy5.app/privacy
 Information about how user data is collected, stored, and protected.
 
 ### Terms & Conditions
-https://example.com/terms
+https://boost-ai.zappy5.app/terms
 Legal terms describing service usage, rights, and policies.
 
 ### Accessibility Statement
-https://example.com/accessibility
+https://boost-ai.zappy5.app/accessibility
 Information about WCAG compliance and accessibility features.
 
 ---
 
 # Business Context (for LLM understanding)
 
-## About Business
+## About Boost-AI
+Boost-AI is a business in the אוטומציה עסקית ו-AI industry.
+
+## Target Audience
+מנהלים וצוותים של אנליסטים עסקיים, data analysts, מנהלי פרויקטים
+
+## Industry
+אוטומציה עסקית ו-AI
+
 ---
 
 # Additional Resources
 
-- **Sitemap**: https://example.com/sitemap.xml
-- **Robots.txt**: https://example.com/robots.txt
+- **Sitemap**: https://boost-ai.zappy5.app/sitemap.xml
+- **Robots.txt**: https://boost-ai.zappy5.app/robots.txt
