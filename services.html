@@ -62,10 +62,212 @@
   opacity: 0.7;
 }</style>
     <!-- Cookie Consent -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.css">
     <script src="https://cdn.jsdelivr.net/npm/vanilla-cookieconsent@3/dist/cookieconsent.umd.js"></script>
     <!-- Mickidum Accessibility Toolbar -->
     <script src="https://cdn.jsdelivr.net/gh/mickidum/acc_toolbar/acctoolbar/acctoolbar.min.js"></script>
+<!-- Zappy Analytics -->
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration
+  var config = {
+    websiteId: 'c5986b1e-4752-4f09-a18d-bfc114f0b8ea',
+    apiUrl: 'https://api.zappy5.com/api/analytics/track',
+    sessionDuration: 30 * 60 * 1000, // 30 minutes
+    visitorDuration: 30 * 24 * 60 * 60 * 1000, // 30 days
+    trackPageViews: true,
+    trackClicks: true,
+    trackFormSubmissions: true
+  };
+  
+  // Generate or retrieve persistent visitor ID (30 days)
+  function getVisitorId() {
+    var visitorKey = 'zappy_visitor_' + config.websiteId;
+    var visitor = null;
+    
+    try {
+      visitor = localStorage.getItem(visitorKey);
+      if (visitor) {
+        var visitorData = JSON.parse(visitor);
+        var now = Date.now();
+        
+        // Check if visitor ID is still valid (30 days)
+        if (now - visitorData.created < config.visitorDuration) {
+          // Update last seen timestamp
+          visitorData.lastSeen = now;
+          localStorage.setItem(visitorKey, JSON.stringify(visitorData));
+          return visitorData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: LocalStorage not available');
+    }
+    
+    // Generate new visitor ID
+    var newVisitorId = 'zv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      localStorage.setItem(visitorKey, JSON.stringify({
+        id: newVisitorId,
+        created: Date.now(),
+        lastSeen: Date.now()
+      }));
+    } catch (e) {
+      // Continue without local storage
+    }
+    
+    return newVisitorId;
+  }
+  
+  // Generate or retrieve session ID (30 minutes)
+  function getSessionId() {
+    var sessionKey = 'zappy_session_' + config.websiteId;
+    var session = null;
+    
+    try {
+      session = sessionStorage.getItem(sessionKey);
+      if (session) {
+        var sessionData = JSON.parse(session);
+        var now = Date.now();
+        
+        // Check if session is still valid
+        if (now - sessionData.timestamp < config.sessionDuration) {
+          // Update timestamp
+          sessionData.timestamp = now;
+          sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          return sessionData.id;
+        }
+      }
+    } catch (e) {
+      console.warn('Zappy Analytics: SessionStorage not available');
+    }
+    
+    // Generate new session ID
+    var newSessionId = 'zs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    try {
+      sessionStorage.setItem(sessionKey, JSON.stringify({
+        id: newSessionId,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      // Continue without session storage
+    }
+    
+    return newSessionId;
+  }
+  
+  var visitorId = getVisitorId();
+  var sessionId = getSessionId();
+  
+  // Track an event
+  function trackEvent(eventType, data) {
+    data = data || {};
+    
+    var eventData = {
+      website_id: config.websiteId,
+      event_type: eventType,
+      page_path: window.location.pathname,
+      referrer: document.referrer || 'direct',
+      visitor_id: visitorId,
+      session_id: sessionId,
+      metadata: data
+    };
+    
+    // Use sendBeacon if available (better for page unload events)
+    if (navigator.sendBeacon) {
+      var blob = new Blob([JSON.stringify(eventData)], { type: 'application/json' });
+      navigator.sendBeacon(config.apiUrl, blob);
+    } else {
+      // Fallback to fetch
+      fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData),
+        keepalive: true
+      }).catch(function(error) {
+        console.warn('Zappy Analytics: Failed to track event', error);
+      });
+    }
+  }
+  
+  // Track page view
+  if (config.trackPageViews) {
+    trackEvent('pageview', {
+      title: document.title,
+      url: window.location.href
+    });
+  }
+  
+  // Track clicks on important elements
+  if (config.trackClicks) {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      
+      // Track button clicks (counted as actions)
+      if (target.tagName === 'BUTTON' || target.closest('button')) {
+        var button = target.tagName === 'BUTTON' ? target : target.closest('button');
+        trackEvent('click', {
+          element: 'button',
+          text: button.textContent.trim().substring(0, 100),
+          id: button.id || null,
+          class: button.className || null
+        });
+      }
+      
+      // Track link clicks (navigation - not counted as actions)
+      else if (target.tagName === 'A' || target.closest('a')) {
+        var link = target.tagName === 'A' ? target : target.closest('a');
+        trackEvent('navigation', {
+          element: 'link',
+          text: link.textContent.trim().substring(0, 100),
+          href: link.href,
+          external: link.hostname !== window.location.hostname
+        });
+      }
+    }, true);
+  }
+  
+  // Track form submissions
+  if (config.trackFormSubmissions) {
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      
+      trackEvent('form_submit', {
+        form_id: form.id || null,
+        form_name: form.name || null,
+        form_action: form.action || null,
+        form_method: form.method || 'GET'
+      });
+    }, true);
+  }
+  
+  // Track time on page (send on page unload)
+  var pageLoadTime = Date.now();
+  
+  window.addEventListener('beforeunload', function() {
+    var timeOnPage = Math.floor((Date.now() - pageLoadTime) / 1000); // in seconds
+    
+    trackEvent('page_unload', {
+      time_on_page: timeOnPage,
+      page_path: window.location.pathname
+    });
+  });
+  
+  // Expose tracking function globally for custom events
+  window.zappyAnalytics = {
+    track: trackEvent,
+    getVisitorId: function() { return visitorId; },
+    getSessionId: function() { return sessionId; }
+  };
+  
+})();
+</script>
+<!-- End Zappy Analytics -->
 
     <style id="zappy-mobile-submenu-styles">
       /* Mobile submenu accordion styles */
@@ -137,22 +339,22 @@
     <div class="container nav-container">
       <div class="nav-brand">
         <a href="/" class="logo-link">
-          <img src="/assets/avivi-solutions-boostai-ai-logo.webp" alt="מתלבט בין Avivi Solutions לבין BoostAI" class="logo">
+          <img src="/assets/avivi-solutions-boostai-ai-logo.webp" alt="BoostAI" class="logo">
         </a>
       </div>
       
       <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
         <svg class="hamburger-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <svg class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display: none;">
-          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
       
       <button class="phone-header-btn" aria-label="Call us">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
         </svg>
       </button>
       
@@ -171,7 +373,7 @@
 
   <section class="page-header">
     <div class="container">
-      <h1>אוטומציות עסקיות מבוססות בינה מלאכותית מותאמות לצרכים שלך</h1>
+      <h1>אוטומציות עסקיות וכלי בינה מלאכותית מותאמים לצרכים שלך</h1>
       <h3>פתרונות מקיפים להטמעת כלי AI לעסקים שמשנים את אופן העבודה של הארגון שלך</h3>
     </div>
   </section>
@@ -221,7 +423,7 @@
           <p>ההדרכות כוללות סדנאות אינטראקטיביות, חומרי לימוד מפורטים, תרגילים מעשיים ותמיכה אישית. אנחנו גם מציעים הדרכות מתקדמות למנהלים ולמשתמשי כוח, כך שהארגון שלך יהיה מסוגל לא רק להשתמש בכלים אלא גם לפתח ולשפר אותם באופן עצמאי.</p>
         </div>
         <div class="service-detail-image">
-          <img data-placeholder="service-6" data-context="Interactive training workshop with team members practicing AI tools on laptops, trainer providing hands-on guidance" src="/assets/avivi-solutions-boostai-ai-service-service-6.webp" alt="הדרכת צוותים בכלי AI מקצועית" class="service-img">
+          <div class="zappy-inserted-element" style="margin: 20px 0; text-align: center; display: flex; justify-content: center;"><img id="element-saved-1767012516723-bwhmq2bgzvc" src="https://api.zappy5.com/api/website/preview/c5986b1e-4752-4f09-a18d-bfc114f0b8ea/assets/avivi-solutions-boostai-ai-service-service-10-1767012507229-i6p3zl.webp?v=1767012507311" alt="Image" style="width: auto; height: auto; border-radius: 8px; max-width: 100%; object-fit: cover; object-position: 50% 50%;" data-element-type="image"></div>
         </div>
       
     </div>
@@ -238,7 +440,7 @@
           <p>האינטגרציה שלנו כוללת גם הקמת מערכות ניטור וריפורטינג שמאפשרות לך לעקוב אחרי הביצועים, לזהות בעיות בזמן אמת ולקבל תובנות מבוססות נתונים על האפקטיביות של האוטומציה עסקית.</p>
         </div>
         <div class="service-detail-image">
-          <img data-placeholder="service-7" data-context="System integration diagram showing AI tools connecting with existing business systems like CRM and ERP" src="/assets/avivi-solutions-boostai-ai-service-service-7.webp" alt="אינטגרציה של הטמעת כלי AI לעסקים עם מערכות קיימות" class="service-img">
+          <img id="element-saved-1767003477805-aevoryswnp" src="/assets/avivi-solutions-boostai-ai-service-service-7.webp" alt="Image" style="width: auto; height: auto; border-radius: 8px; max-width: 100%; object-fit: cover; object-position: 50% 50%;" data-element-type="image">
         </div>
       
     </div>
@@ -255,7 +457,7 @@
           <p>הניתוח שלנו לא מסתפק בספרות - אנחנו מספקים הקשר, הסברים והמלצות ברורות. הצוות שלך יקבל כלים שמאפשרים להם להבין לא רק מה קורה בארגון, אלא גם למה זה קורה ומה אפשר לעשות בנוגע לזה.</p>
         </div>
         <div class="service-detail-image">
-          <img data-placeholder="service-8" data-context="Business analytics dashboard showing AI-powered insights, charts and predictive analytics on multiple screens" src="/assets/avivi-solutions-boostai-ai-service-service-8.webp" alt="ניתוח נתונים מבוסס אוטומציות עסקיות מבוססות בינה מלאכותית" class="service-img">
+          <img id="element-saved-1767003818303-xyqk3zgvdx" src="/assets/avivi-solutions-boostai-ai-service-service-8.webp" alt="Image" style="width: auto; height: auto; border-radius: 8px; max-width: 100%; object-fit: cover; object-position: 50% 50%;" data-element-type="image">
         </div>
       
     </div>
@@ -272,7 +474,7 @@
           <p>אנחנו מאמינים בשותפות ארוכת טווח. הצוות שלנו זמין לייעוץ, לפתרון בעיות ולסיוע בהרחבת השימוש בכלים. אנחנו רוצים לראות את הארגון שלך מצליח ומתפתח, ואנחנו כאן כדי לוודא שהטכנולוגיה תמיד תתמוך ביעדים שלך.</p>
         </div>
         <div class="service-detail-image">
-          <img data-placeholder="service-9" data-context="Technical support team providing ongoing assistance, monitoring system performance on multiple displays" src="/assets/avivi-solutions-boostai-ai-service-service-9.webp" alt="תמיכה טכנית בהטמעת כלי AI לעסקים" class="service-img">
+          <img id="element-saved-1767003892274-36bm1ncwm25" src="/assets/avivi-solutions-boostai-ai-service-service-9.webp" alt="Image" style="width: auto; height: auto; border-radius: 8px; max-width: 100%; object-fit: cover; object-position: 50% 50%;" data-element-type="image">
         </div>
       
     </div>
@@ -289,7 +491,7 @@
           <p>המערכות שלנו כוללות הצפנה מתקדמת, בקרות גישה מפורטות, מערכות גיבוי ושחזור, וכלי ניטור שמזהים איומי אבטחה בזמן אמת. אנחנו גם מספקים הדרכות אבטחת מידע לצוותים שלך כדי להבטיח שהאנשים הם קו ההגנה הראשון.</p>
         </div>
         <div class="service-detail-image">
-          <img data-placeholder="service-10" data-context="Cybersecurity operations center with security specialists monitoring AI systems, displaying security dashboards and encryption protocols" src="/assets/avivi-solutions-boostai-ai-service-service-10.webp" alt="אבטחת מידע בהטמעת כלי AI לעסקים" class="service-img">
+          <img id="element-saved-1767003935548-5s7nu9niyk2" src="/assets/avivi-solutions-boostai-ai-service-service-10.webp" alt="Image" style="width: auto; height: auto; border-radius: 8px; max-width: 100%; object-fit: cover; object-position: 50% 50%;" data-element-type="image">
         </div>
       
     </div>
@@ -298,7 +500,7 @@
 
   <section class="why-choose">
     <div class="container">
-      <h2>למה לבחור ב-Avivi Solutions לאוטומציה עסקית?</h2>
+      <h2>למה לבחור ב-Boost-AI לאוטומציה עסקית?</h2>
       <div class="why-grid">
         <div class="why-item">
           <h3>ניסיון מוכח</h3>
@@ -323,14 +525,14 @@
   <section class="cta-section">
     <div class="container">
       <div class="cta-content">
-        <h2>מוכנים להתחיל עם אוטומציות עסקיות מבוססות בינה מלאכותית?</h2>
+        <h2>מוכנים להתחיל? רוצים לשמוע עוד?</h2>
         <p>בואו נדבר על איך אנחנו יכולים לעזור לארגון שלכם להשיג את היעדים שלו עם הטמעת כלי AI לעסקים מתקדמת.</p>
         <a href="/contact" class="btn btn-primary btn-large">צור קשר עכשיו</a>
       </div>
     </div>
   </section>
 
-  <a href="https://wa.me/[whatsapp_handle]" target="_blank" class="whatsapp-float" aria-label="WhatsApp" rel="noopener noreferrer">
+  <a href="#" target="_blank" class="whatsapp-float" aria-label="WhatsApp" rel="noopener noreferrer" style="display:none;">
     <i class="fab fa-whatsapp"></i>
   </a>
 
@@ -340,12 +542,16 @@
       <div class="container">
         <div class="footer-main">
           <div class="all-rights-reserved">
-            <p>© 2025 מתלבט בין Avivi Solutions לבין BoostAI. כל הזכויות שמורות.</p>
+            <p>© 2025 BoostAI. כל הזכויות שמורות.</p>
           </div>
-          <div class="footer-social"><a href="https://facebook.com/[facebook_handle]" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-<a href="https://instagram.com/[instagram_handle]" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-<a href="https://wa.me/[whatsapp_handle]" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-<a href="https://linkedin.com/company/[linkedin_handle]" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a></div>
+          <div class="footer-social"><a href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="display:none;"><i class="fab fa-facebook"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style="display:none;"><i class="fab fa-instagram"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" style="display:none;"><i class="fab fa-whatsapp"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" style="display:none;"><i class="fab fa-linkedin"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="Twitter" style="display:none;"><i class="fab fa-twitter"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="display:none;"><i class="fab fa-youtube"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="TikTok" style="display:none;"><i class="fab fa-tiktok"></i></a>
+<a href="#" target="_blank" rel="noopener noreferrer" aria-label="Pinterest" style="display:none;"><i class="fab fa-pinterest"></i></a></div>
           <div class="footer-legal">
             <a href="/privacy" aria-label="מדיניות פרטיות">
               מדיניות פרטיות
